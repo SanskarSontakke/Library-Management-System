@@ -160,10 +160,6 @@ If you are using a Raspberry Pi and want to enable the buzzer feedback for QR co
 
 Contributions are welcome! If you have suggestions for improvements or bug fixes, please feel free to fork the repository and submit a pull request.
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
-
 ## Contact
 
 [Sanskar Sontakke] - [sanskarsontakke@gmail.com] - [+91 8208435506]
