@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Library Management - Return Book</title>
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="static/styles.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-danger">
+        <a class="navbar-brand text-white" href="index.html">Library Management</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item"><a class="nav-link text-white" href="Student.html">Students</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="books.html">Books</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="borrow.html">Borrow Books</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="return.html">Return Books</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="contact.html">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow-lg">
+                    <div class="card-header bg-dark text-white text-center">
+                        <h3>Return Book</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="returnBookForm">
+                            <div class="form-group">
+                                <label for="bookNumberInput">Enter Book Number</label>
+                                <input type="text" class="form-control" id="bookNumberInput" placeholder="Enter or Scan Book Number">
+                            </div>
+
+                            <div class="text-center mt-3">
+                                <button type="button" id="scanQrCodeBtn" class="btn btn-primary m-1">Scan QR Code</button>
+                                <button type="button" id="confirmReturnBtn" class="btn btn-success m-1" style="display: none;">Return Book</button>
+                            </div>
+
+                            <div id="returnStatus" class="mt-3 text-center font-weight-bold"></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="static/js/jquery.js"></script>
+    <script src="static/js/bootstrap.min.js"></script>
+    <script>
+        // Show "Return Book" button when user types a book number manually
+        document.getElementById('bookNumberInput').addEventListener('input', () => {
+            const bookNumberValue = document.getElementById('bookNumberInput').value.trim();
+            document.getElementById('confirmReturnBtn').style.display = bookNumberValue !== '' ? 'inline-block' : 'none';
+        });
+
+        // Handle QR code scanning
+        document.getElementById('scanQrCodeBtn').addEventListener('click', () => {
+            document.getElementById('returnStatus').textContent = 'Scanning QR Code...';
+            document.getElementById('returnStatus').style.color = '';
+
+            fetch('/scan-qr-code')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.bookNumber) {
+                        document.getElementById('bookNumberInput').value = data.bookNumber;
+                        document.getElementById('returnStatus').textContent = 'QR Code Scanned Successfully!';
+                        document.getElementById('returnStatus').style.color = 'green';
+                        document.getElementById('confirmReturnBtn').style.display = 'inline-block'; // Show button after scan
+                    } else if (data.error) {
+                        document.getElementById('returnStatus').textContent = 'Error scanning QR code: ' + data.error;
+                        document.getElementById('returnStatus').style.color = 'red';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('returnStatus').textContent = 'Network error during QR scan.';
+                    document.getElementById('returnStatus').style.color = 'red';
+                });
+        });
+
+        // Handle book return
+        document.getElementById('confirmReturnBtn').addEventListener('click', () => {
+            const bookNumber = document.getElementById('bookNumberInput').value.trim();
+            if (!bookNumber) {
+                document.getElementById('returnStatus').textContent = 'Please enter or scan a book number.';
+                document.getElementById('returnStatus').style.color = 'red';
+                return;
+            }
+
+            fetch('/return-book-process', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ bookNumber: bookNumber }),
+            })
+            .then(response => response.text())
+            .then(message => {
+                document.getElementById('returnStatus').textContent = message;
+                document.getElementById('returnStatus').style.color = message.startsWith('✅') ? 'green' : 'red';
+                document.getElementById('bookNumberInput').value = '';
+                document.getElementById('confirmReturnBtn').style.display = 'none'; // Hide button after return
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('returnStatus').textContent = 'Network error during book return.';
+                document.getElementById('returnStatus').style.color = 'red';
+            });
+        });
+    </script>
+</body>
+
+</html>

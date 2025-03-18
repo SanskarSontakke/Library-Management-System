@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Library Management - Students</title>
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="static/styles.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-danger ">
+        <a class="navbar-brand text-white" href="index.html">Library Management </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="Student.html">Students</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="books.html">Books</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="borrow.html">Borrow Books</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="return.html">Return Books</a>
+                </li>
+
+
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="contact.html">Contact</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="main container-fluid">
+        <div class="row mt-4">
+            <div class="col-md-3 ">
+                <h1 class="text-center bg-dark text-white">Add student</h1>
+                <form action="/add-student" method="POST">
+                    <div class="form-group">
+                        <label for="name">Name Of Student</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="className">Class</label>
+                        <select class="form-control" id="className" name="className" required>
+                            <option value="1st">1st</option>
+                            <option value="2nd">2nd</option>
+                            <option value="3rd">3rd</option>
+                            <option value="4th">4th</option>
+                            <option value="5th">5th</option>
+                            <option value="6th">6th</option>
+                            <option value="7th">7th</option>
+                            <option value="8th">8th</option>
+                            <option value="9th">9th</option>
+                            <option value="10th">10th</option>
+                            <option value="11th">11th</option>
+                            <option value="12th">12th</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="roll">Roll No</label>
+                        <input type="text" class="form-control" id="roll" name="roll" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address">Address Of Student</label>
+                        <input type="text" class="form-control" id="address" name="address">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="books">Books Borrowed</label>
+                        <input type="text" class="form-control" id="books" name="books">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+
+                <div class="mt-5">
+                    <h3 class="text-center bg-danger text-white">Delete Student</h3>
+                    <form id="deleteStudentForm" class="p-2">
+                        <div class="form-group">
+                            <label for="studentRollToDelete">Student Roll Number to Delete</label>
+                            <input type="text" class="form-control" id="studentRollToDelete" name="studentRollToDelete" required placeholder="Enter Student Roll No"> <!- Changed input type to text and placeholder -->
+                        </div>
+                        <button type="submit" class="btn btn-danger">Delete Student</button>
+                        <p id="deleteStatus" class="mt-2 text-center"></p>
+                    </form>
+                </div>
+
+                <div class="mt-5"> <!- New: Update Student Section -->
+                    <h3 class="text-center bg-info text-white">Update Student</h3>
+                    <form id="updateStudentForm" class="p-2">
+                        <div class="form-group">
+                            <label for="studentRollToUpdate">Student Roll No to Update</label>
+                            <input type="text" class="form-control" id="studentRollToUpdate" name="studentRollToUpdate" required placeholder="Enter Student Roll No">
+                        </div>
+                        <div class="form-group">
+                            <label for="updateName">New Student Name (Optional)</label>
+                            <input type="text" class="form-control" id="updateName" name="name">
+                        </div>
+                        <div class="form-group">
+                            <label for="updateClassName">Class (Optional)</label>
+                            <select class="form-control" id="updateClassName" name="className">
+                                <option value="">-- Select Class --</option>
+                                <option value="1st">1st</option>
+                                <option value="2nd">2nd</option>
+                                <option value="3rd">3rd</option>
+                                <option value="4th">4th</option>
+                                <option value="5th">5th</option>
+                                <option value="6th">6th</option>
+                                <option value="7th">7th</option>
+                                <option value="8th">8th</option>
+                                <option value="9th">9th</option>
+                                <option value="10th">10th</option>
+                                <option value="11th">11th</option>
+                                <option value="12th">12th</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="updateRoll">New Roll No (Optional)</label>
+                            <input type="text" class="form-control" id="updateRoll" name="roll">
+                        </div>
+                        <div class="form-group">
+                            <label for="updateAddress">New Address (Optional)</label>
+                            <input type="text" class="form-control" id="updateAddress" name="address">
+                        </div>
+                        <div class="form-group">
+                            <label for="updateBooks">New Books Borrowed (Optional)</label>
+                            <input type="text" class="form-control" id="updateBooks" name="books">
+                        </div>
+                        <button type="submit" class="btn btn-info">Update Student</button>
+                        <p id="updateStatus" class="mt-2 text-center"></p>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-md-9">
+                <h1 class="text-center bg-primary text-white">All student List</h1>
+                <ul id="studentList" class="list-group">
+                    <!-- Student list will be dynamically loaded here -->
+                </ul>
+            </div>
+        </div>
+    </div>
+    <script src="static/js/jquery.js"></script>
+    <script src="static/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            loadStudentList();
+
+            $("#studentSearchForm").submit(function (event) { // Handler for student search form
+                event.preventDefault();
+                var searchQuery = $("#studentSearchInput").val(); // Get search query
+
+                loadStudentList(searchQuery); // Call loadStudentList with search query
+            });
+
+            $("#addStudentForm").submit(function (event) { // Add event listener for add student form
+                event.preventDefault();
+                var formData = $(this).serialize();
+                $.ajax({
+                    url: '/add-student',
+                    type: 'POST',
+                    data: formData,
+                    success: function (response) {
+                        $("#addStudentStatus").text(response).removeClass("text-danger").addClass("text-success");
+                        loadStudentList();
+                        $("#addStudentForm")[0].reset();
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error adding student:", error);
+                        $("#addStudentStatus").text("Error adding student.").removeClass("text-success").addClass("text-danger");
+                    }
+                });
+            });
+
+            $("#deleteStudentForm").submit(function (event) {
+                event.preventDefault();
+                var studentRollToDelete = $("#studentRollToDelete").val();
+                if (!studentRollToDelete) {
+                    $("#deleteStatus").text("Please enter Student Roll Number to delete.").removeClass("text-success").addClass("text-danger");
+                    return;
+                }
+                $.ajax({
+                    url: '/api/delete-student/' + studentRollToDelete,
+                    type: 'DELETE',
+                    success: function (response) {
+                        $("#deleteStatus").text(response).removeClass("text-danger").addClass("text-success");
+                        loadStudentList();
+                        $("#deleteStudentForm")[0].reset();
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error deleting student:", error);
+                        $("#deleteStatus").text("Error deleting student.").removeClass("text-success").addClass("text-danger");
+                    }
+                });
+            });
+
+            $("#updateStudentForm").submit(function (event) { // New: Update Student Form Submission Handler
+                event.preventDefault();
+                var formData = $(this).serialize();
+                $.ajax({
+                    url: '/api/update-student', // Corrected URL for update student
+                    type: 'POST',
+                    data: formData,
+                    success: function (response) {
+                        $("#updateStatus").text(response).removeClass("text-danger").addClass("text-success");
+                        loadStudentList(); // Reload student list
+                        $("#updateStudentForm")[0].reset(); // Clear form fields
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error updating student:", error);
+                        $("#updateStatus").text("Error updating student.").removeClass("text-success").addClass("text-danger");
+                    }
+                });
+            });
+
+
+            function loadStudentList(searchQuery) {
+                var url = '/api/list-students';
+                if (searchQuery) {
+                    url = '/api/search-students?query=' + encodeURIComponent(searchQuery);
+                }
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+                        var studentList = $('#studentList');
+                        studentList.empty();
+                        if (data.length === 0) {
+                            studentList.html('<li class="list-group-item">No students found in the library system.</li>');
+                        } else {
+                            $.each(data, function (key, student) {
+                                studentList.append('<li class="list-group-item">' +
+                                    '<h5>' + student.name + '</h5>' +
+                                    '<p>Class: ' + student.class + '</p>' +
+                                    '<p>Roll No: ' + student.roll_no + '</p>' +
+                                    '<p>Address: ' + (student.address || 'N/A') + '</p>' +
+                                    '<p>Books Borrowed: ' + (student.books_borrowed || 'None') + '</p>' +
+                                    '<button class="btn btn-danger btn-sm float-right delete-btn" data-student-roll="' + student.roll_no + '">Delete</button>' +
+                                    '</li>');
+                            });
+                        }
+                    },
+                    error: function (error) {
+                        console.error('Error fetching student list:', error);
+                        studentList.html('<li class="list-group-item text-danger">Error loading student list.</li>');
+                    }
+                });
+            }
+
+            $(document).on('click', '.delete-btn', function () {
+                var studentRollToDelete = $(this).data('student-roll');
+                if (confirm("Are you sure you want to delete student with Roll No " + studentRollToDelete + "?")) {
+                    $.ajax({
+                        url: '/api/delete-student/' + studentRollToDelete,
+                        type: 'DELETE',
+                        success: function (response) {
+                            alert(response);
+                            loadStudentList();
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Error deleting student:", error);
+                            alert("Error deleting student.");
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

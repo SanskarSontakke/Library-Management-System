@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Library Management - Borrow Book</title>
+    <!-- Bootstrap CSS -->
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="static/styles.css">
+    <style>
+        /* Fixed Confirm Borrow Button Styles */
+        .fixed-confirm-button {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #ffffff;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 999;
+            padding: 10px 0;
+        }
+
+        /* Add bottom padding so form content doesn't hide behind fixed button */
+        .container {
+            padding-bottom: 90px;
+        }
+
+        #borrowedBooksDisplay {
+            margin-top: 15px;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: .25rem;
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-danger">
+        <div class="container-fluid">
+            <a class="navbar-brand text-white" href="index.html">Library Management</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link text-white" href="Student.html">Students</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="books.html">Books</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="borrow.html">Borrow Books</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="return.html">Return Books</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container">
+        <h1 class="text-center mt-4">Borrow Book</h1>
+
+        <div id="borrowForm" class="p-4 bg-light rounded shadow mt-4">
+            <div class="form-group mb-3">
+                <label for="studentRollNo">Student Roll Number:</label>
+                <input type="text" id="studentRollNo" name="studentRollNo" class="form-control" required
+                    placeholder="Enter Student Roll No">
+                <div id="borrowedBooksDisplay" style="display:none;">
+                    <strong>Books Borrowed:</strong>
+                    <ul id="borrowedBooksList">
+                    </ul>
+                </div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="bookNumber">Book Number:</label>
+                <div class="input-group">
+                    <input type="text" id="bookNumber" name="bookNumber" class="form-control" required
+                        placeholder="Enter Book Number Manually">
+                    <div class="input-group-append">
+                        <button id="scanQrCodeBtn" class="btn btn-outline-secondary" type="button">Scan
+                            QR/Barcode</button>
+                    </div>
+                </div>
+                <div id="scanResult" class="mt-2 text-center" style="display:none">
+                    <p>Scanned Book Number: <span id="bookNumberDisplay"></span></p>
+                    <p id="scanBookStatus" class="text-danger"></p>
+                </div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="returnDate">Return Date:</label>
+                <input type="date" id="returnDate" name="returnDate" class="form-control" required>
+            </div>
+
+            <div class="form-actions text-center mt-3">
+                <p id="borrowStatus" class="mt-3"></p>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="/"><button class="btn btn-secondary">Back to Home</button></a>
+        </div>
+    </div>
+
+    <!-- Fixed Confirm Borrow Button -->
+    <div class="fixed-confirm-button text-center">
+        <button id="confirmBorrowBtn" class="btn btn-primary btn-lg" style="display: none;">Confirm Borrow</button>
+    </div>
+
+    <!-- Scripts -->
+    <script src="static/js/jquery.js"></script>
+    <script src="static/js/bootstrap.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // ... (Your existing QR code scan and borrow process scripts - unchanged) ...
+
+
+            document.getElementById('studentRollNo').addEventListener('input', function () {
+                const studentRollNo = this.value.trim();
+                const borrowedBooksDisplay = document.getElementById('borrowedBooksDisplay');
+                const borrowedBooksList = document.getElementById('borrowedBooksList');
+
+                if (studentRollNo) {
+                    fetch(`/api/student-borrowed-books/${studentRollNo}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                if (response.status === 404) {
+                                    borrowedBooksList.innerHTML = '<li class="list-group-item">Student not found.</li>';
+                                } else {
+                                    borrowedBooksList.innerHTML = '<li class="list-group-item text-danger">Error fetching borrowed books.</li>';
+                                }
+                                borrowedBooksDisplay.style.display = 'block'; // Show even with error
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            borrowedBooksList.innerHTML = ''; // Clear previous list
+                            if (data.booksBorrowed && data.booksBorrowed.trim() !== '' && data.booksBorrowed.toLowerCase() !== 'none') {
+                                const books = data.booksBorrowed.split(',').map(book => book.trim());
+                                books.forEach(bookName => {
+                                    const li = document.createElement('li');
+                                    li.textContent = bookName;
+                                    li.classList.add('list-group-item');
+                                    borrowedBooksList.appendChild(li);
+                                });
+                                borrowedBooksDisplay.style.display = 'block';
+                            } else {
+                                borrowedBooksList.innerHTML = '<li class="list-group-item">No books borrowed yet.</li>';
+                                borrowedBooksDisplay.style.display = 'block';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Fetch error:', error); // Log errors to console
+                        });
+                } else {
+                    borrowedBooksDisplay.style.display = 'none'; // Hide if no roll number
+                }
+            });
+
+
+        });
+    </script>
+    <script>
+        document.getElementById('scanQrCodeBtn').addEventListener('click', () => {
+            document.getElementById('borrowStatus').textContent = '';
+            document.getElementById('borrowStatus').style.color = '';
+            document.getElementById('scanBookStatus').textContent = 'Scanning...';
+            document.getElementById('scanBookStatus').style.color = '';
+            document.getElementById('scanResult').style.display = 'block';
+
+            fetch('/scan-qr-code')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.bookNumber) {
+                        document.getElementById('bookNumber').value = data.bookNumber;
+                        document.getElementById('bookNumberDisplay').textContent = data.bookNumber;
+                        document.getElementById('confirmBorrowBtn').style.display = 'inline-block';
+                        document.getElementById('scanBookStatus').textContent = 'QR/Barcode Scanned!';
+                        document.getElementById('scanBookStatus').style.color = 'green';
+                    } else if (data.error) {
+                        document.getElementById('borrowStatus').textContent = 'QR Scan Error: ' + data.error;
+                        document.getElementById('borrowStatus').style.color = 'red';
+                        document.getElementById('bookNumberDisplay').textContent = 'Scan Failed';
+                        document.getElementById('confirmBorrowBtn').style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('borrowStatus').textContent = 'Network error during QR scan.';
+                    document.getElementById('borrowStatus').style.color = 'red';
+                    document.getElementById('bookNumberDisplay').textContent = 'Scan Failed';
+                    document.getElementById('confirmBorrowBtn').style.display = 'none';
+                });
+        });
+
+        document.getElementById('confirmBorrowBtn').addEventListener('click', () => {
+            const bookNumber = document.getElementById('bookNumber').value;
+            const studentRollNo = document.getElementById('studentRollNo').value;
+            const returnDate = document.getElementById('returnDate').value;
+
+            document.getElementById('borrowStatus').textContent = 'Borrowing...';
+            document.getElementById('borrowStatus').style.color = '';
+
+            if (bookNumber && studentRollNo && returnDate) {
+                fetch('/borrow-book-process', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bookNumber, studentRollNo, returnDate }),
+                })
+                    .then(response => response.text())
+                    .then(message => {
+                        document.getElementById('borrowStatus').textContent = message;
+                        document.getElementById('borrowStatus').style.color = message.startsWith('✅') ? 'green' : 'red';
+                        document.getElementById('confirmBorrowBtn').style.display = 'none';
+                        document.getElementById('bookNumberDisplay').textContent = '';
+                        document.getElementById('studentRollNo').value = '';
+                        document.getElementById('bookNumber').value = '';
+                        document.getElementById('returnDate').value = '';
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        document.getElementById('borrowStatus').textContent = 'Network error during borrow process.';
+                        document.getElementById('borrowStatus').style.color = 'red';
+                    });
+            } else {
+                document.getElementById('borrowStatus').textContent = 'All fields are required.';
+                document.getElementById('borrowStatus').style.color = 'red';
+            }
+        });
+    </script>
+    <script>
+        // Existing script remains...
+
+        // 👇 NEW: Show Confirm button if user manually enters Book Number
+        document.getElementById('bookNumber').addEventListener('input', () => {
+            const bookNumberValue = document.getElementById('bookNumber').value.trim();
+            if (bookNumberValue !== '') {
+                document.getElementById('confirmBorrowBtn').style.display = 'inline-block';
+            } else {
+                document.getElementById('confirmBorrowBtn').style.display = 'none';
+            }
+        });
+
+        // 👇 Keep your existing scan and confirm button click code unchanged
+    </script>
+</body>
+
+</html>

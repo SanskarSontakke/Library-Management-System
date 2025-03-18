@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Library Management - Books</title>
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="static/styles.css">
+    <style>
+        mark {
+            background-color: yellow; /* Default highlight color */
+            padding: 0.2em; /* Optional padding for better visual appearance */
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-danger ">
+        <a class="navbar-brand text-white" href="index.html">Library Management</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item"><a class="nav-link text-white" href="Student.html">Students</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="books.html">Books</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="borrow.html">Borrow Books</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="return.html">Return Books</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="contact.html">Contact</a></li>
+            </ul>
+            <form class="form-inline my-2 my-lg-0" id="bookSearchForm">
+                <input class="form-control mr-sm-2" type="search" placeholder="Search Books" aria-label="Search" id="bookSearchInput" name="query">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            </form>
+        </div>
+    </nav>
+
+    <div class="main container-fluid">
+        <div class="row mt-4">
+            <div class="col-md-3">
+                <h1 class="text-center bg-secondary text-white">Add Books</h1>
+                <form action="/add-book" method="POST" id="addBookForm">
+                    <div class="form-group">
+                        <label for="addBookName">Book Name</label>
+                        <input type="text" name="name" id="addBookName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="addBookAuthor">Author</label>
+                        <input type="text" name="author" id="addBookAuthor" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="addBookCategory">Category</label>
+                        <input type="text" name="category" id="addBookCategory" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="addBookLocation">Location</label>
+                        <input type="text" name="location" id="addBookLocation" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="addBookAvailability">Is Available</label>
+                        <select class="form-control" name="availability" id="addBookAvailability" required>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="addBookNumber">Book Number</label>
+                        <div class="input-group">
+                            <input type="text" name="number" id="addBookNumber" class="form-control" required>
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-secondary" type="button" id="scanBookNumberBtn">Scan QR/Barcode</button>
+                            </div>
+                        </div>
+                        <div id="scanBookNumberResult" class="mt-2 text-center" style="display:none">
+                            <p>Scanned Number: <span id="scannedBookNumber"></span></p>
+                            <p id="scanBookStatus" class="text-danger"></p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="addBookAvailableDate">Available Date (if unavailable)</label>
+                        <input type="date" name="date" id="addBookAvailableDate" class="form-control">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <p id="addBookStatus" class="mt-3 text-center"></p>
+                </form>
+
+                <div class="mt-5">
+                    <h3 class="text-center bg-danger text-white">Delete Book</h3>
+                    <form id="deleteBookForm" class="p-2">
+                        <div class="form-group">
+                            <label for="deleteBookNumber">Book Number to Delete</label>
+                            <input type="text" class="form-control" id="deleteBookNumber" name="bookNumberToDelete" required placeholder="Enter Book Number">
+                        </div>
+                        <button type="submit" class="btn btn-danger">Delete Book</button>
+                        <p id="deleteBookStatus" class="mt-2 text-center"></p>
+                    </form>
+                </div>
+
+                <div class="mt-5">
+                    <h3 class="text-center bg-info text-white">Update Book</h3>
+                    <form id="updateBookForm" class="p-2">
+                        <div class="form-group">
+                            <label for="updateBookNumber">Book Number to Update</label>
+                            <input type="text" class="form-control" id="updateBookNumber" name="bookNumberToUpdate" required placeholder="Enter Book Number">
+                        </div>
+                        <div class="form-group">
+                            <label for="updateBookName">New Book Name (Optional)</label>
+                            <input type="text" class="form-control" id="updateBookName" name="name">
+                        </div>
+                        <div class="form-group">
+                            <label for="updateBookAuthor">New Author (Optional)</label>
+                            <input type="text" class="form-control" id="updateBookAuthor" name="author">
+                        </div>
+                        <div class="form-group">
+                            <label for="updateBookCategory">New Category (Optional)</label>
+                            <input type="text" class="form-control" id="updateBookCategory" name="category">
+                        </div>
+                        <div class="form-group">
+                            <label for="updateBookLocation">New Location (Optional)</label>
+                            <input type="text" class="form-control" id="updateBookLocation" name="location">
+                        </div>
+                        <div class="form-group">
+                            <label for="updateBookAvailability">New Availability (Optional)</label>
+                            <select class="form-control" id="updateBookAvailability" name="availability">
+                                <option value="">-- Select Availability --</option>
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="updateBookAvailableDate">New Available Date (Optional)</label>
+                            <input type="date" class="form-control" id="updateBookAvailableDate" name="available_date">
+                        </div>
+                        <button type="submit" class="btn btn-info">Update Book</button>
+                        <p id="updateBookStatus" class="mt-2 text-center"></p>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-md-9">
+                <h1 class="text-center bg-primary text-white">All Book List</h1>
+                <ul id="bookList" class="list-group">
+                    <!-- Book list will be dynamically loaded here -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="static/js/jquery.js"></script>
+    <script src="static/js/bootstrap.min.js"></script>
+    <script src="static/js/jquery.js"></script>
+    <script src="static/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            loadBookList();
+
+            $("#bookSearchForm").submit(function (event) {
+                event.preventDefault();
+                var searchQuery = $("#bookSearchInput").val();
+                loadBookList(searchQuery);
+            });
+
+            $("#addBookForm").submit(function (event) {
+                event.preventDefault();
+                var formData = $(this).serialize();
+                $.ajax({
+                    url: '/add-book',
+                    type: 'POST',
+                    data: formData,
+                    success: function (response) {
+                        $("#addBookStatus").text(response).removeClass("text-danger").addClass("text-success");
+                        loadBookList();
+                        $("#addBookForm")[0].reset();
+                        document.getElementById('scanBookNumberResult').style.display = 'none';
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error adding book:", error);
+                        $("#addBookStatus").text("Error adding book.").removeClass("text-success").addClass("text-danger");
+                    }
+                });
+            });
+
+            $("#deleteBookForm").submit(function (event) {
+                event.preventDefault();
+                var bookNumberToDelete = $("#deleteBookNumber").val();
+                if (!bookNumberToDelete) {
+                    $("#deleteBookStatus").text("Please enter Book Number to delete.").removeClass("text-success").addClass("text-danger");
+                    return;
+                }
+                $.ajax({
+                    url: '/api/delete-book/' + bookNumberToDelete,
+                    type: 'DELETE',
+                    success: function (response) {
+                        $("#deleteBookStatus").text(response).removeClass("text-danger").addClass("text-success");
+                        loadBookList();
+                        $("#deleteBookForm")[0].reset();
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error deleting book:", error);
+                        $("#deleteBookStatus").text("Error deleting book.").removeClass("text-success").addClass("text-danger");
+                    }
+                });
+            });
+
+            $("#updateBookForm").submit(function (event) {
+                event.preventDefault();
+                var formData = $(this).serialize();
+                $.ajax({
+                    url: '/api/update-book',
+                    type: 'POST',
+                    data: formData,
+                    success: function (response) {
+                        $("#updateBookStatus").text(response).removeClass("text-danger").addClass("text-success");
+                        loadBookList();
+                        $("#updateBookForm")[0].reset();
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error updating book:", error);
+                        $("#updateBookStatus").text("Error updating book.").removeClass("text-success").addClass("text-danger");
+                    }
+                });
+            });
+
+            function loadBookList(searchQuery) {
+                var url = '/api/list-books';
+                if (searchQuery) {
+                    url = '/api/search-books?query=' + encodeURIComponent(searchQuery);
+                }
+
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+                        var bookList = $('#bookList');
+                        bookList.empty();
+                        if (data.length === 0) {
+                            bookList.html('<li class="list-group-item">No books found matching your search.</li>');
+                        } else {
+                            $.each(data, function (key, book) {
+                                let bookNameHighlighted = book.book_name;
+                                let authorHighlighted = book.author || '';
+                                let categoryHighlighted = book.category || '';
+                                let locationHighlighted = book.location || '';
+
+                                if (searchQuery) {
+                                    const regex = new RegExp(searchQuery, 'gi'); // 'gi' for global and case-insensitive
+
+                                    bookNameHighlighted = bookNameHighlighted.replace(regex, '<mark>$&</mark>');
+                                    authorHighlighted = authorHighlighted.replace(regex, '<mark>$&</mark>');
+                                    categoryHighlighted = categoryHighlighted.replace(regex, '<mark>$&</mark>');
+                                    locationHighlighted = locationHighlighted.replace(regex, '<mark>$&</mark>');
+                                }
+
+
+                                bookList.append('<li class="list-group-item">' +
+                                    '<h5>' + bookNameHighlighted + '</h5>' +
+                                    '<p>Author: ' + authorHighlighted + '</p>' +
+                                    '<p>Category: ' + categoryHighlighted + '</p>' +
+                                    '<p>Location: ' + locationHighlighted + '</p>' +
+                                    '<p>Book Number: ' + book.book_number + '</p>' +
+                                    '<p>Availability: ' + book.is_available + '</p>' +
+                                    '<p>Available Date: ' + (book.available_date || 'N/A') + '</p>' +
+                                    '<button class="btn btn-danger btn-sm float-right delete-btn" data-book-number="' + book.book_number + '">Delete</button>' +
+                                    '</li>');
+                            });
+                        }
+                    },
+                    error: function (error) {
+                        console.error('Error fetching book list:', error);
+                        bookList.html('<li class="list-group-item text-danger">Error loading books.</li>');
+                    }
+                });
+            }
+
+            $(document).on('click', '.delete-btn', function () {
+                var bookNumberToDelete = $(this).data('book-number');
+                if (confirm("Are you sure you want to delete book number " + bookNumberToDelete + "?")) {
+                    $.ajax({
+                        url: '/api/delete-book/' + bookNumberToDelete,
+                        type: 'DELETE',
+                        success: function (response) {
+                            alert(response);
+                            loadBookList();
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Error deleting book:", error);
+                            alert("Error deleting book.");
+                        }
+                    });
+                }
+            });
+
+            document.getElementById('scanBookNumberBtn').addEventListener('click', () => {
+                document.getElementById('scanBookNumberResult').style.display = 'block';
+                document.getElementById('scanBookStatus').textContent = 'Scanning...';
+                document.getElementById('scanBookStatus').style.color = '';
+                document.getElementById('scannedBookNumber').textContent = 'Scanning...';
+
+                fetch('/scan-qr-code')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.bookNumber) {
+                            document.getElementById('scannedBookNumber').textContent = data.bookNumber;
+                            document.getElementById('addBookNumber').value = data.bookNumber;
+                            document.getElementById('scanBookStatus').textContent = 'QR/Barcode Scanned!';
+                            document.getElementById('scanBookStatus').style.color = 'green';
+                            document.getElementById('scanBookNumberResult').style.display = 'block';
+                        } else if (data.error) {
+                            document.getElementById('scanBookStatus').textContent = 'QR Scan Error: ' + data.error;
+                            document.getElementById('scanBookStatus').style.color = 'red';
+                            document.getElementById('scannedBookNumber').textContent = 'Scan Failed';
+                            document.getElementById('scanBookNumberResult').style.display = 'block';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        document.getElementById('scanBookStatus').textContent = 'Network error during QR scan.';
+                        document.getElementById('scanBookStatus').style.color = 'red';
+                        document.getElementById('scannedBookNumber').textContent = 'Scan Failed';
+                        document.getElementById('scanBookNumberResult').style.display = 'block';
+                    });
+            });
+        });
+    </script>
+
+</body>
+
+</html>

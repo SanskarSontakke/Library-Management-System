@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Library Management Dashboard</title>
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- Bootstrap Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-danger">
+        <div class="container-fluid">
+            <a class="navbar-brand text-white" href="index.html">Library Management</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="Student.html">Students</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="books.html">Books</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="borrow.html">Borrow Books</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="return.html">Return Books</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="contact.html">Contact</a>
+                    </li>
+                </ul>
+                <!-- Search form REMOVED from here -->
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <div class="container my-4">
+        <header class="text-center mb-5">
+            <h1 class="display-4">Welcome to the Library System</h1>
+            <p class="lead">Manage your library resources efficiently.</p>
+        </header>
+
+        <div class="row ">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm border-primary">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Book Management</h5>
+                        <p class="card-text">Manage books, add new books, view book list, borrow and return
+                            books.</p>
+                        <a href="books.html" class="btn btn-primary">View Books</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm border-info">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Student Management</h5>
+                        <p class="card-text">Manage student records and information.</p>
+                        <a href="Student.html" class="btn btn-info">View Students</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm border-warning">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Contact Us</h5>
+                        <p class="card-text">Contact information and support details.</p>
+                        <a href="contact.html" class="btn btn-warning">Contact Admin</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer mt-auto py-3 bg-light text-center">
+        <div class="container">
+            <span class="text-muted">© 2025 Library Management System</span>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS and jQuery -->
+    <script src="static/js/jquery.js"></script>
+    <script src="static/js/bootstrap.min.js"></script>
+</body>
+
+</html>
