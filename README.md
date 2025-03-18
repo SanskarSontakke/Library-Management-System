@@ -62,8 +62,7 @@ Before you begin, ensure you have the following installed:
 1.  **Clone the repository:**
 
     ```bash
-    git clone [repository URL]
-    cd [repository-folder-name]
+    git clone https://github.com/SanskarSontakke/Library-Management-System.git
     ```
 
 2.  **Navigate to the project directory:**
@@ -160,10 +159,6 @@ If you are using a Raspberry Pi and want to enable the buzzer feedback for QR co
 ## Contributing
 
 Contributions are welcome! If you have suggestions for improvements or bug fixes, please feel free to fork the repository and submit a pull request.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
 
 ## Contact
 
