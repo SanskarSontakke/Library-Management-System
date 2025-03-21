@@ -3,6 +3,7 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const sqlite3 = require('sqlite3').verbose();
 const { spawn } = require('child_process');
+const multer = require('multer');
 
 const app = express();
 const PORT = 3000;
@@ -12,49 +13,123 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // --- Static Files ---
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/static', express.static(path.join(__dirname, 'public', 'static')));
+// **MOVE express.static SETUP INSIDE .then() block:**
+import('mime')
+    .then(mimeModule => {
+        const mime = mimeModule.default; // Access default export of mime
 
+        // --- express.static Middleware Setup (NOW INSIDE .then() block) ---
+        app.use(express.static(path.join(__dirname, 'public'), {
+            setHeaders: (res, filePath, stat) => {
+                const mimeType = mime.getType(filePath);
+                if (mimeType) {
+                    res.setHeader('Content-Type', mimeType);
+                }
+            }
+        }));
+
+        // --- New: Serve book photos directory at /book-photos URL ---
+        app.use('/book-photos', express.static(path.join(__dirname, 'public', 'uploads', 'book-photos'), { // New express.static middleware
+            setHeaders: (res, filePath, stat) => {
+                const mimeType = mime.getType(filePath);
+                if (mimeType) {
+                    res.setHeader('Content-Type', mimeType);
+                }
+            }
+        }));
+
+        // --- End of express.static setup ---
+
+        // --- HTML Routes --- (Move HTML routes INSIDE .then() block as well, if they are placed BEFORE express.static)
+        app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+        app.get('/add-book', (req, res) => res.sendFile(path.join(__dirname, 'public', 'add-book.html')));
+        app.get('/books', (req, res) => res.sendFile(path.join(__dirname, 'public', 'books.html')));
+        app.get('/update-book', (req, res) => res.sendFile(path.join(__dirname, 'public', 'update-book.html')));
+        app.get('/delete-book', (req, res) => res.sendFile(path.join(__dirname, 'public', 'delete-book.html')));
+        app.get('/borrow-book', (req, res) => res.sendFile(path.join(__dirname, 'public', 'borrow.html')));
+        app.get('/return-book', (req, res) => res.sendFile(path.join(__dirname, 'public', 'return.html')));
+        app.get('/students', (req, res) => res.sendFile(path.join(__dirname, 'public', 'Student.html')));
+        app.get('/update-student', (req, res) => res.sendFile(path.join(__dirname, 'public', 'update-student.html')));
+        app.get('/delete-student', (req, res) => res.sendFile(path.join(__dirname, 'public', 'delete-student.html')));
+        app.get('/contact', (req, res) => res.sendFile(path.join(__dirname, 'public', 'contact.html')));
+        // --- End of HTML Routes ---
+
+
+        // --- Start the server --- (Move app.listen INSIDE .then() block as well - VERY IMPORTANT)
+        app.listen(PORT, () => {
+            console.log(`🚀 Server is running on http://localhost:${PORT}`);
+        });
+        // --- End of server startup ---
+
+
+    })
+    .catch(err => {
+        console.error("❌ Error importing 'mime' package:", err);
+    });
 // --- Database Connections ---
+// Connect to books database (books-data.db)
 const booksDb = new sqlite3.Database(path.join(__dirname, 'books-data.db'), (err) => {
     if (err) {
         console.error('❌ Error connecting to books database:', err.message);
     } else {
         console.log('📚 Connected to books database');
-        booksDb.run("PRAGMA foreign_keys = ON");
+        booksDb.run("PRAGMA foreign_keys = ON"); // Enable foreign key constraints
     }
 });
 
+// Connect to students database (students-data.db)
 const studentsDb = new sqlite3.Database(path.join(__dirname, 'students-data.db'), (err) => {
     if (err) {
         console.error('❌ Error connecting to students database:', err.message);
     } else {
         console.log('🎓 Connected to students database');
-        studentsDb.run("PRAGMA foreign_keys = ON");
+        studentsDb.run("PRAGMA foreign_keys = ON"); // Enable foreign key constraints
     }
 });
 
-// --- HTML Routes ---
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-app.get('/add-book', (req, res) => res.sendFile(path.join(__dirname, 'public', 'add-book.html')));
-app.get('/list-books', (req, res) => res.sendFile(path.join(__dirname, 'public', 'list-books.html')));
-app.get('/update-book', (req, res) => res.sendFile(path.join(__dirname, 'public', 'update-book.html')));
-app.get('/delete-book', (req, res) => res.sendFile(path.join(__dirname, 'public', 'delete-book.html')));
-app.get('/borrow-book', (req, res) => res.sendFile(path.join(__dirname, 'public', 'borrow-book.html')));
-app.get('/return-book', (req, res) => res.sendFile(path.join(__dirname, 'public', 'return-book.html')));
+// --- File Upload Configuration (Multer) ---
+// Configure storage for uploaded book photos
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const destPath = path.join(__dirname, 'public', 'uploads', 'book-photos');
+        console.log("Multer destination path:", destPath); // Log destination path
+        cb(null, destPath); // Set destination directory
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const ext = path.extname(file.originalname);
+        const filename = file.fieldname + '-' + uniqueSuffix + ext;
+        console.log("Multer generated filename:", filename); // Log generated filename
+        cb(null, filename); // Set filename
+    }
+});
 
-app.get('/add-student', (req, res) => res.sendFile(path.join(__dirname, 'public', 'add-student.html')));
-app.get('/list-students', (req, res) => res.sendFile(path.join(__dirname, 'public', 'list-students.html')));
-app.get('/update-student', (req, res) => res.sendFile(path.join(__dirname, 'public', 'update-student.html')));
-app.get('/delete-student', (req, res) => res.sendFile(path.join(__dirname, 'public', 'delete-student.html')));
+const upload = multer({ storage: storage }); // Create multer instance with configured storage
 
 // --- Book API Endpoints ---
-// Add a new book
-app.post('/add-book', (req, res) => {
-    const { name, author, category, location, number, availability, date } = req.body; // Include location
-    const query = `INSERT INTO books (book_name, book_number, is_available, available_date, author, category, location) VALUES (?, ?, ?, ?, ?, ?, ?)`; // Include location
+// API endpoint for uploading book photo (separate upload)
+app.post('/api/upload-book-photo', upload.single('photo'), (req, res) => {
+    console.log("➡️  /api/upload-book-photo route hit");
+    if (!req.file) {
+        console.log("❌  No file received in upload request");
+        return res.status(400).send('No photo file uploaded.');
+    }
+    const bookPhotoPath = `/book-photos/${req.file.filename}`; // Correct path - no /static
+    console.log("✅  File upload successful, path:", bookPhotoPath);
+    res.json({ bookPhotoPath: bookPhotoPath });
+}, (error, req, res, next) => {
+    console.error("❌  Multer error during file upload:", error);
+    res.status(500).send('Error uploading photo.');
+});
 
-    booksDb.run(query, [name, number, availability, date, author, category, location], function (err) { // Include location
+// API endpoint to add a new book (with photo upload handled in form submit)
+app.post('/add-book', upload.single('photo'), (req, res) => {
+    const { name, author, category, location, number, availability, date } = req.body;
+    const bookPhotoPath = req.file ? `/book-photos/${req.file.filename}` : null; // Correct path - no /static
+
+    const query = `INSERT INTO books (book_name, book_number, is_available, available_date, author, category, location, book_photo_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+
+    booksDb.run(query, [name, number, availability, date, author, category, location, bookPhotoPath], function (err) {
         if (err) {
             console.error('❌ Error adding book:', err.message);
             if (err.errno === 19 && err.code === 'SQLITE_CONSTRAINT') {
@@ -67,19 +142,19 @@ app.post('/add-book', (req, res) => {
     });
 });
 
-// List all books (API endpoint for fetching book data)
+// API endpoint to list all books
 app.get('/api/list-books', (req, res) => {
-    const query = `SELECT * FROM books`;
+    const query = `SELECT * FROM books`; // Simple SELECT * query
     booksDb.all(query, [], (err, rows) => {
         if (err) {
             console.error('❌ Error fetching books:', err.message);
             return res.status(500).json({ error: 'Error fetching books.' });
         }
-        res.json(rows);
+        res.json(rows); // Send book data as JSON response
     });
 });
 
-// --- NEW: Delete Book API Endpoint ---
+// API endpoint to delete a book
 app.delete('/api/delete-book/:bookNumber', (req, res) => {
     const bookNumber = req.params.bookNumber;
 
@@ -112,7 +187,7 @@ app.delete('/api/delete-book/:bookNumber', (req, res) => {
     });
 });
 
-// --- NEW: Search Books API Endpoint ---
+// API endpoint to search books
 app.get('/api/search-books', (req, res) => {
     const searchQuery = req.query.query;
 
@@ -120,12 +195,11 @@ app.get('/api/search-books', (req, res) => {
         return listBooks(req, res);
     }
 
-    // Function to escape LIKE pattern characters in SQLite
     const escapeSearchTerm = (term) => {
-        return term.replace(/[%_]/g, '\\$&'); // Escape % and _
+        return term.replace(/[%_]/g, '\\$&');
     };
 
-    const searchTerm = `%${escapeSearchTerm(searchQuery)}%`; // Escape searchQuery
+    const searchTerm = `%${escapeSearchTerm(searchQuery)}%`;
 
     const query = `
         SELECT * FROM books
@@ -141,7 +215,7 @@ app.get('/api/search-books', (req, res) => {
     });
 });
 
-// --- NEW: Update Book API Endpoint ---
+// API endpoint to update book information
 app.post('/api/update-book', (req, res) => {
     const bookNumberToUpdate = req.body.bookNumberToUpdate;
     const updatedBookData = {};
@@ -160,7 +234,7 @@ app.post('/api/update-book', (req, res) => {
         updateValues.push(updatedBookData[key]);
     }
 
-    updateQuery = updateQuery.slice(0, -2) + ' WHERE book_number = ?'; // Remove trailing comma and space, add WHERE
+    updateQuery = updateQuery.slice(0, -2) + ' WHERE book_number = ?';
     updateValues.push(bookNumberToUpdate);
 
     booksDb.run(updateQuery, updateValues, function (err) {
@@ -172,6 +246,24 @@ app.post('/api/update-book', (req, res) => {
             res.send('✅ Book updated!');
         } else {
             res.status(404).send('Book not found.');
+        }
+    });
+});
+
+// New API endpoint to get book details by book number
+app.get('/api/book-details/:bookNumber', (req, res) => {
+    const bookNumber = req.params.bookNumber;
+    const query = `SELECT * FROM books WHERE book_number = ?`;
+
+    booksDb.get(query, [bookNumber], (err, row) => {
+        if (err) {
+            console.error('❌ Error fetching book details:', err.message);
+            return res.status(500).json({ error: 'Error fetching book details.' });
+        }
+        if (row) {
+            res.json(row);
+        } else {
+            res.status(404).json({ message: 'Book details not found.' });
         }
     });
 });
@@ -304,7 +396,7 @@ app.get('/api/student-borrowed-books/:studentRollNo', (req, res) => {  // New ro
             return res.status(500).json({ error: 'DB error fetching student borrowed books.' });
         }
         if (!student) {
-            return res.status(404).json({ error: 'Student not found.' });
+            return res.status(404).send('Student not found.');
         }
         res.json({ booksBorrowed: student.books_borrowed }); // Send back books_borrowed in JSON
     });
@@ -342,7 +434,7 @@ app.post('/borrow-book-process', (req, res) => {
     // 1. Check if the student exists and get their ID and current books_borrowed list
     studentsDb.get("SELECT id, books_borrowed FROM students WHERE roll_no = ?", [studentRollNo], (err, student) => {
         if (err) {
-            console.error('❌ API borrow-book-process (student check) DB Error:', err.message); // More specific error logging
+            console.error('❌ API borrow-book-process (student check) DB Error:', err.message);
             return res.status(500).send('Error checking student.');
         }
         if (!student) {
@@ -355,7 +447,7 @@ app.post('/borrow-book-process', (req, res) => {
         // 2. Get the book name and check if book exists and is available
         booksDb.get("SELECT book_name, is_available FROM books WHERE book_number = ?", [bookNumber], (bookErr, bookInfo) => { // Fetch is_available
             if (bookErr) {
-                console.error('❌ API borrow-book-process (book check) DB Error:', bookErr.message); // More specific error logging
+                console.error('❌ API borrow-book-process (book check) DB Error:', bookErr.message);
                 return res.status(500).send('Database error fetching book info.');
             }
             if (!bookInfo) {
@@ -387,7 +479,7 @@ app.post('/borrow-book-process', (req, res) => {
 
                 if (this.changes > 0) {
                     // Book borrowed successfully, now update student's books_borrowed list
-                    studentsDb.run(updateStudentQuery, [updatedBorrowedBooks, studentId], function(updateStudentErr) {
+                    studentsDb.run(updateStudentQuery, [updatedBorrowedBooks, studentId], function (updateStudentErr) {
                         if (updateStudentErr) {
                             console.error('❌ API borrow-book-process (updateStudentQuery) DB Error:', updateStudentErr.message); // More specific error logging
                             return res.status(500).send('Error updating student info.');
@@ -471,7 +563,7 @@ app.post('/return-book-process', (req, res) => {
 
                 if (this.changes > 0) {
                     // Book returned successfully in books table, now update student's record
-                    studentsDb.run(updateStudentQuery, [updatedBorrowedBooks, studentId], function(updateStudentErr) {
+                    studentsDb.run(updateStudentQuery, [updatedBorrowedBooks, studentId], function (updateStudentErr) {
                         if (updateStudentErr) {
                             console.error('❌ Error updating student borrowed books on return:', updateStudentErr.message);
                             return res.status(500).send('Error updating student information on book return.');
@@ -489,9 +581,4 @@ app.post('/return-book-process', (req, res) => {
             });
         });
     });
-});
-
-// --- Start the server ---
-app.listen(PORT, () => {
-    console.log(`🚀 Server is running on http://localhost:${PORT}`);
 });
